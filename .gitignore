@@ -1,0 +1,6 @@
+# Test전용 파일
+test*.py
+
+# Python Cache 파일
+__pycache__
+__pycache__/*
