@@ -2,12 +2,11 @@ from bs4 import BeautifulSoup as bs
 from threading import Thread
 from collections import OrderedDict
 import requests as re
-import pandas as pd
+import json
 import time
 
 class Crawler:
     queueTransactions = None
-    datafram = None
     iteration = 0
 
     # {'txid':'', 'address':'', 'vin':['address':'','type':'','spent':''], 'vout':['address':'','type':'','spent':'']}
@@ -15,7 +14,7 @@ class Crawler:
     def __init__(self, start) -> None:
         self.baseUrl = 'https://hashxp.org/tx/'
         self.queueTransactions = OrderedDict()
-        self.queueTransactions[start]="Strat"
+        self.queueTransactions[start]="Start"
 
     def get_address_type(self, data, target, listObtainedData):
         data_list = data.select(target)
@@ -25,9 +24,10 @@ class Crawler:
                 address = data.find('tt', class_='btcaddr')
                 type = data.find('b')
                 vin['address'] = address.text
-                vin['type'] = type.text[1:-1]
-                vin['spent'] = "Yes"
-                print(vin)
+                vin['type'] = "None"
+                if type != None:
+                    vin['type'] = type.text[1:-1]
+                vin['spent'] = "spent"
                 listObtainedData.append(vin)
         else:
             for data in data_list:
@@ -37,29 +37,32 @@ class Crawler:
                 # key: txid, value: address
                 if data.find('text') != None:
                     # UnSpent
-                    spent = data.find('text')
+                    spent = data.find('text').text
                     self.queueTransactions[spent] = address
                     vout['address'] = address.text
-                    vout['type'] = type.text[1:-1]
-                    vout['spent'] = spent.text
+                    if type == None:
+                        vout['type'] = "None"
+                    else:
+                        vout['type'] = type.text[1:-1]
+                    vout['spent'] = spent
                 else:
                     # Spent
                     tx = data.find('a', class_='btctx', href=True).attrs['href'][4:-4]
-                    self.queueTransactions[tx] = address
+                    self.queueTransactions[tx] = address.text
                     vout['address'] = address.text
-                    vout['type'] = type.text[1:-1]
-                    vout['spent'] = tx.text
+                    if type == None:
+                        vout['type'] = "None"
+                    else:
+                        vout['type'] = type.text[1:-1]
+                    vout['spent'] = tx
                 listObtainedData.append(vout)
 
-    
-
     def crawling_data(self):
-        for idx, (transaction, addr) in enumerate(self.queueTransactions.items()):
-            if self.iteration >= 300:
-                break
-
+        while self.iteration <= 300:
+            transaction, addr = self.queueTransactions.popitem(last=False)
+            if transaction == 'unspent':
+                continue
             print(transaction)
-            self.queueTransactions.pop(transaction)
             # Get HTML Data
             response = re.post(url=self.baseUrl+transaction)
             if response.status_code != 200:
@@ -90,14 +93,17 @@ class Crawler:
 
             for th in threads:
                 th.join()
-                
+
             json = dict()
             json['transaction'] = transaction
             json['address'] = addr
             json['vin'] = list_obtained_vin
             json['vout'] = list_obtained_vout
-            print(json)
+            self.json_list.append(json)
 
-            time.sleep(3)
             self.iteration +=1
-        
+            time.sleep(3)
+    
+    def save_data(self):
+        with open('Crawling_Data.json', 'a', encoding='UTF-8') as f:
+            json.dump(self.json_list, f)
