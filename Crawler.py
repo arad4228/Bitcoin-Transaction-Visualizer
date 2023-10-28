@@ -58,7 +58,7 @@ class Crawler:
                 listObtainedData.append(vout)
 
     def crawling_data(self):
-        while self.iteration <= 300:
+        while self.iteration <= 1000:
             transaction, addr = self.queueTransactions.popitem(last=False)
             if transaction == 'unspent':
                 continue
