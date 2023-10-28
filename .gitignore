@@ -2,6 +2,7 @@
 test*.py
 
 # 크롤링한 데이터
+Result
 *.json
 
 # Python Cache 파일
