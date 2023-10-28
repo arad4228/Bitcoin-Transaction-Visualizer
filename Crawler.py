@@ -62,7 +62,7 @@ class Crawler:
             transaction, addr = self.queueTransactions.popitem(last=False)
             if transaction == 'unspent':
                 continue
-            print(transaction)
+            print(f'Iter: {self.iteration}, transaction: {transaction}')
             # Get HTML Data
             response = re.post(url=self.baseUrl+transaction)
             if response.status_code != 200:
@@ -102,8 +102,8 @@ class Crawler:
             self.json_list.append(json)
 
             self.iteration +=1
-            time.sleep(3)
+            time.sleep(4)
     
-    def save_data(self):
-        with open('Crawling_Data.json', 'a', encoding='UTF-8') as f:
+    def save_data(self, starttransaction):
+        with open(f'{starttransaction}.json', 'a', encoding='UTF-8') as f:
             json.dump(self.json_list, f)
