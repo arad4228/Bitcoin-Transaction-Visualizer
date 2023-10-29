@@ -58,7 +58,7 @@ class Crawler:
                 listObtainedData.append(vout)
 
     def crawling_data(self):
-        while self.iteration <= 1000:
+        while self.iteration <= 3000:
             transaction, addr = self.queueTransactions.popitem(last=False)
             if transaction == 'unspent':
                 continue
@@ -102,7 +102,7 @@ class Crawler:
             self.json_list.append(json)
 
             self.iteration +=1
-            time.sleep(4)
+            time.sleep(5)
     
     def save_data(self, starttransaction):
         with open(f'{starttransaction}.json', 'a', encoding='UTF-8') as f:
