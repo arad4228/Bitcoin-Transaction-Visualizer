@@ -1,8 +1,12 @@
 # Test전용 파일
-test*.py
+Test
+Test/*
 
 # 크롤링한 데이터
-Result
+Result_Json
+Result_Json/*
+Result_PNG
+Result_PNG/*
 *.json
 
 # Python Cache 파일
