@@ -1,6 +1,7 @@
 import plotly.graph_objects as go
 import networkx as nx
 from collections import OrderedDict
+from collections import deque 
 
 class Node:
     
@@ -10,15 +11,23 @@ class Node:
         self.y = y
         self.spent = spent
         self.connectedNode = OrderedDict()
-        # 해당 노드를 가르키는 노드들의 갯수
-        self.directed_node_number = 0
+        # 내가 돈을 받은 주소의 수
+        self.received_node_number = 0
+        # 내가 돈을 보낸 주소의 수
+        self.send_node_number = 0
 
     def __str__(self) -> str:
         return self.address
         
     def addNewNode(self, address, nextNode : 'Node'):
-        nextNode.add_directed_node_number()
-        self.connectedNode[address] = nextNode
+        if address == self.address:
+            return
+        # 상대방의 노드이 받은 수와 자신의 돈을 보낸 수를 증가
+        check = self.connectedNode.get(address)
+        nextNode.add_received_node_number()
+        if check == None:
+            self.add_send_node_number()
+            self.connectedNode[address] = nextNode
 
     def get_x_location(self):
         return self.x
@@ -29,11 +38,17 @@ class Node:
     def get_xy_location(self):
         return self.x, self.y
     
-    def add_directed_node_number(self):
-        self.directed_node_number += 1
+    def add_received_node_number(self):
+        self.received_node_number = self.received_node_number + 1
+    
+    def add_send_node_number(self):
+        self.send_node_number = self.send_node_number + 1
 
-    def get_directed_node_number(self):
-        return self.directed_node_number
+    def get_received_node_number(self):
+        return self.received_node_number
+
+    def get_send_node_number(self):
+        return self.send_node_number
 
     def get_connected_node(self):
         return list(self.connectedNode)
