@@ -19,7 +19,7 @@ class Node:
     def __str__(self) -> str:
         return self.address
         
-    def addNewNode(self, address, nextNode : 'Node'):
+    def add_new_node(self, address, nextNode : 'Node'):
         if address == self.address:
             return
         # 상대방의 노드이 받은 수와 자신의 돈을 보낸 수를 증가
