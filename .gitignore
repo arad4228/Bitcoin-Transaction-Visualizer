@@ -9,6 +9,9 @@ Result_PNG
 Result_PNG/*
 *.json
 
+# RPC 설정 파일
+RPC_Config.py
+
 # Python Cache 파일
 __pycache__
 __pycache__/*
