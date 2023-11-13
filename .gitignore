@@ -15,3 +15,7 @@ RPC_Config.py
 # Python Cache 파일
 __pycache__
 __pycache__/*
+
+# Jupyter Notebook Backup
+.ipynb_checkpoints
+.ipynb_checkpoints/*
