@@ -3,6 +3,7 @@ from threading import Thread
 from collections import OrderedDict
 from RPC_Config import *
 import json
+import os
 
 # Crawling Backward Transactions
 class RPC_Crawler:
@@ -16,32 +17,43 @@ class RPC_Crawler:
         self.end_transaction_number = end_transaction_count
         self.json_list = list()
 
+    def __str__(self) -> str:
+        return 'RPC'
+
     def get_address_info(self, data, target, listObtainedData):
         if target == 'vin':
             for vins in data:
                 vin = dict()
-                utxo_transaction_id = vins['txid']
+                if 'coinbase' in vins:
+                    address = 'Coinbase'
+                    type = 'Coinbase'
+                    money = '0'
+                else:
+                    utxo_transaction_id = vins['txid']
+                    utxo_transaction = self.rpc_connect.getrawtransaction(utxo_transaction_id, 2)
+                    utxo_location = vins['vout']
+                    address = utxo_transaction['vout'][utxo_location]['scriptPubKey']['address']
+                    type = 'Unknown'
+                    money = str(utxo_transaction['vout'][utxo_location]['value'])
 
-                utxo_transaction = self.rpc_connect.getrawtransaction(utxo_transaction_id, 2)
-                utxo_location = vins['vout']
-                address = utxo_transaction['vout'][utxo_location]['scriptPubKey']['address']
-                type = 'None'
                 spent = "spent"
-                money = str(utxo_transaction['vout'][utxo_location]['value'])+"sat"
                 vin['address'] = address
                 vin['type'] = type
                 vin['spent'] = spent
                 vin['money'] = money
                 listObtainedData.append(vin)
-
-                self.queueTransactions[utxo_transaction_id] = address
+                if address != 'Coinbase':
+                    self.queueTransactions[utxo_transaction_id] = address
         else:
             for vouts in data:
                 vout = dict()
-                address = vouts['scriptPubKey']['address']
-                type = 'None'
-                spent = 'None'
-                money = str(vouts['value'])+"sat"
+                if 'address' in vouts['scriptPubKey']:
+                    address = vouts['scriptPubKey']['address']
+                else:
+                    address = "Unknown"
+                type = 'Unknown'
+                spent = 'Unknown'
+                money = str(vouts['value'])
                 vout['address'] = address
                 vout['type'] = type
                 vout['spent'] = spent
@@ -82,7 +94,10 @@ class RPC_Crawler:
     def reverse_json_list(self):
         self.json_list.reverse
 
-    def save_data(self, starttransaction):
+    def save_data(self, location, starttransaction):
+        path = os.getcwd()
+        if location not in path:
+            os.chdir(path+location)      
         self.reverse_json_list()
         with open(f'RPC_{starttransaction}.json', 'a', encoding='UTF-8') as f:
             json.dump(self.json_list, f)

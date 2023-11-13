@@ -4,6 +4,7 @@ from collections import OrderedDict
 import requests as re
 import json
 import time
+import os
 
 # Crawling Forwarding Transaction
 class Web_Crawler:
@@ -17,6 +18,9 @@ class Web_Crawler:
         # {'txid':'', 'address':'', 'vin':['address':'','type':'','spent':''], 'vout':['address':'','type':'','spent':'']}
         self.json_list = list()
 
+    def __str__(self) -> str:
+        return 'Web'
+    
     def get_address_info(self, data, target, listObtainedData):
         data_list = data.select(target)
         # Vin
@@ -117,6 +121,9 @@ class Web_Crawler:
             self.iteration +=1
             time.sleep(5)
     
-    def save_data(self, starttransaction):
+    def save_data(self, location, starttransaction):
+        path = os.getcwd()
+        if location not in path:
+            os.chdir(path+location)      
         with open(f'Web_{starttransaction}.json', 'a', encoding='UTF-8') as f:
             json.dump(self.json_list, f)

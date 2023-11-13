@@ -1,5 +1,6 @@
 from Node import *
 import json
+import os
 
 class Transaction_Graph:
 
@@ -36,12 +37,14 @@ class Transaction_Graph:
         return ptx, pty
 
     def make_graph_data(self):
+        path = os.getcwd()
+        os.chdir(path+'\\Result_Json')
         # get Json Data
         with open(f'{self.filename}.json', 'r', encoding='UTF-8') as f:
             crawling_data = json.load(f)
         
         # Node 
-        for datas in crawling_data[:100]:
+        for datas in crawling_data[:300]:
             # 전체 노드 생성
             for vin in datas['vin']:
                 address = vin['address']
@@ -72,7 +75,7 @@ class Transaction_Graph:
             self.vin_y = self.vout_y
             self.vout_y += 10
             
-    def Drawing(self):
+    def draw_graph(self):
         # 모든 노드들에 대해 좌표와 연결 노드를 모두 생성
         G = nx.DiGraph()
 
@@ -88,16 +91,22 @@ class Transaction_Graph:
             send = node.get_send_node_number()
             if spent == 'unspent':
                 node_color.append('green')
+            elif received >= 50:
+                node_color.append('red')
+            elif send >= 50:
+                node_color.append('blue')
+            elif received >= 25 and send >= 25:
+                node_color.append('yellow')
+            elif received < 25 and send >= 25:
+                node_color.append('orange')
+            elif received >= 25 and send < 25:
+                node_color.append('navy')
             elif received >= 10 and send >= 10:
                 node_color.append('violet')
-            elif received < 5 and send >= 10:
-                node_color.append('blue')
-            elif send >= 10:
-                node_color.append('red')
-            elif received >= 10 and send < 5:
-                node_color.append('orange')
-            elif received >= 10:
-                node_color.append('yellow')
+            elif received < 10 and send >= 10:
+                node_color.append('pink')
+            elif received >= 10 and send < 10:
+                node_color.append('gold')
             else:
                 node_color.append('black')
             
@@ -181,6 +190,7 @@ class Transaction_Graph:
                             hovermode='closest',
                             margin=dict(b=20,l=5,r=5,t=40),
                             # width=7680, height= 4320, 
+                            width=1920, height=1080,
                             xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
                             yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
                         )
@@ -188,6 +198,6 @@ class Transaction_Graph:
         fig.show()
 
 if __name__ == '__main__':
-    tg = Transaction_Graph('Web_bf05f899c90589cdd3c42a44d032e28933fa819a1c5c19e44d37b2be592afb6b')
+    tg = Transaction_Graph('Web_e1aa3eef4368a5ec6b7c3f8c251a141b67bb7b9cfa3ea1f3109b1250fc8374e7')
     tg.make_graph_data()
-    tg.Drawing()
+    tg.draw_graph()
